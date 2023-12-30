@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-// структура для данных потока
+//специальная структура для данных потока
 typedef struct{
 	pthread_cond_t cond;
 	pthread_mutex_t lock;
@@ -30,7 +30,7 @@ void* provide(void* arg) {
         printf("Provided\n");
         pthread_cond_signal(&global_data.cond);
         pthread_mutex_unlock(&global_data.lock);
-        if (++global_data.counter == 5) {
+        if (++global_data.counter >= 5) {
         	break;
         }
         sleep(1);
@@ -48,7 +48,7 @@ void* consume(void* arg) {
         global_data.ready = 0;
         printf("Consumed\n\n");
         pthread_mutex_unlock(&global_data.lock);
-        if (global_data.counter == 5) {
+        if (global_data.counter >= 5) {
         	break;
         }
     }
