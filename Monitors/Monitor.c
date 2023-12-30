@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-//специальная структура для данных потока
+// структура для данных потока
 typedef struct{
 	pthread_cond_t cond;
 	pthread_mutex_t lock;
