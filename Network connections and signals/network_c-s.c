@@ -12,7 +12,7 @@
 #include <string.h>
 
 #define PORT "31337"
-#define MAX_CLIENTS 5
+#define MAX_CLIENTS 256
 #define MAX_BUF_SIZE 256
 
 volatile sig_atomic_t wasSigHup = 0;
@@ -94,7 +94,7 @@ int main() {
 
     register_signal_handlers();
 
-    sigset_t blockedMask;
+    sigset_t blockedMask, origMask;
     sigemptyset(&blockedMask);
     sigaddset(&blockedMask, SIGHUP);
   
