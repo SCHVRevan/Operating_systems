@@ -23,7 +23,6 @@ void* provide(void* arg) {
         pthread_mutex_lock(&global_data.lock);
         if (global_data.ready == 1){
             pthread_mutex_unlock(&global_data.lock);
-            printf("Not provided: событие не обработанно\n");
             continue;
         }
         global_data.ready = 1;
