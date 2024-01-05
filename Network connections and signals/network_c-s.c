@@ -21,7 +21,7 @@ void sigHupHandler(int r) {
     wasSigHup = 1;
 }
 
-// Получить адрес
+// Получение адреса
 void *get_socket_address(struct sockaddr *sockaddr) {
     if (sockaddr->sa_family == AF_INET) {
         return &(((struct sockaddr_in *)sockaddr)->sin_addr);
@@ -82,7 +82,7 @@ void register_signal_handler() {
     sigaction(SIGKILL, &sa, NULL);
 }
 
-// Найти клиента в массиве клиентов
+// Поиск id клиента в массиве активных клиентов
 int find_client_index(int clients[], int active_clients, int fd) {
     for (int i = 0; i < active_clients; i++) {
         if (clients[i] == fd) return i;
