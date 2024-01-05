@@ -13,7 +13,6 @@
 
 #define PORT "31337"
 #define MAX_CLIENTS 256
-#define MAX_BUF_SIZE 256
 
 volatile sig_atomic_t wasSigHup = 0;
 
@@ -70,13 +69,17 @@ int setup_server_socket() {
     return server_socket;
 }
 
-// Регистрация обработчиков сигналов
-void register_signal_handlers() {
+// Регистрация обработчика сигналов
+void register_signal_handler() {
     struct sigaction sa;
     sigaction(SIGHUP, NULL, &sa);
     sa.sa_handler = sigHupHandler;
     sa.sa_flags |= SA_RESTART;
     sigaction(SIGHUP, &sa, NULL);
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
+    sigaction(SIGQUIT, &sa, NULL);
+    sigaction(SIGKILL, &sa, NULL);
 }
 
 // Найти клиента в массиве клиентов
@@ -92,7 +95,7 @@ int main() {
     int client_sockets[MAX_CLIENTS];
     int active_clients = 0;
 
-    register_signal_handlers();
+    register_signal_handler();
 
     sigset_t blockedMask, origMask;
     sigemptyset(&blockedMask);
@@ -107,6 +110,9 @@ int main() {
     FD_ZERO(&fds);
     FD_SET(server_socket, &fds);
     int max_fd = server_socket;
+    
+    struct timespec timeout;
+    timeout.tv_sec = 1;
 
     while (!wasSigHup) {
         // Копируем набор дескрипторов, так как pselect изменяет его
@@ -117,9 +123,6 @@ int main() {
             if (client_sockets[i] > max_fd) max_fd = client_sockets[i];
         }
 
-        struct timespec timeout;
-        timeout.tv_sec = 1;
-
         if (pselect(max_fd + 1, &temp_fds, NULL, NULL, &timeout, &origMask) == -1) {
             if (errno != EINTR) {
                 perror("pselect error");
@@ -128,7 +131,7 @@ int main() {
             continue;
         }
 
-        for (int i = 0; i <= max_fd; i++) {
+        for (int i = server_socket; i <= max_fd; i++) {
             if (!FD_ISSET(i, &temp_fds)) continue;
 
             if (i == server_socket) {
@@ -150,8 +153,8 @@ int main() {
                 printf("New connection from %s on socket %d\n", client_ip, new_socket);
             } else {
                 // Обработка данных от клиента
-                char buffer[MAX_BUF_SIZE];
-                int bytes_received = recv(i, buffer, MAX_BUF_SIZE - 1, 0);
+                char buffer[1024];
+                int bytes_received = recv(i, buffer, sizeof(buffer), 0);
 
                 if (bytes_received <= 0) {
                     if (bytes_received == 0) {
@@ -165,15 +168,13 @@ int main() {
                     int client_index = find_client_index(client_sockets, active_clients, i);
                     client_sockets[client_index] = client_sockets[--active_clients];
                 } else {
-                    buffer[bytes_received] = '\0';
-                    printf("Received from socket %d: %s", i, buffer);
-                    if (buffer[bytes_received - 1] != '\n') printf("\n");
+                    printf("Received from socket %d: %d bytes\n", i, bytes_received);
                 }
             }
         }
     }
 
-    printf("Server stopped.\n");
+    printf("Server has been stopped.\n");
     close(server_socket);
     return 0;
 }
