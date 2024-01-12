@@ -6,7 +6,7 @@
 #include <linux/version.h>
 #include <linux/init.h> /* Needed for the macros */
 
-#define procfs_name "tsu"
+#define procfs_name "tsulab"
 
 static struct proc_dir_entry *some_proc_file = NULL;
 
