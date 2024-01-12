@@ -11,9 +11,18 @@
 static struct proc_dir_entry *some_proc_file = NULL;
 
 static ssize_t procfile_read(struct file *file_pointer, char __user *buffer, size_t buffer_length, loff_t *offset) {
-	char s[6] = "Tomsk\n";
+	char s[50] = "";
+	s64 uptime;
 	int len = sizeof(s);
 	ssize_t ret = len;
+	
+	uptime = ktime_divns(ktime_get_coarse_boottime(), NSEC_PER_SEC);
+	if (uptime % 2 == 0) {
+		snprintf(s, sizeof(s), "True; Seconds since boot: %lld\n", uptime);
+	}
+	else {
+		snprintf(s, sizeof(s), "False; Seconds since boot: %lld\n", uptime);
+	}
 	
 	if (*offset >= len || copy_to_user(buffer, s, len)) {
 		pr_info("copy_to_user failed\n");
