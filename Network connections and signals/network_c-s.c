@@ -100,6 +100,10 @@ int main() {
     sigset_t blockedMask, origMask;
     sigemptyset(&blockedMask);
     sigaddset(&blockedMask, SIGHUP);
+    sigaddset(&blockedMask, SIGINT);
+    sigaddset(&blockedMask, SIGTERM);
+    sigaddset(&blockedMask, SIGQUIT);
+    sigaddset(&blockedMask, SIGKILL);
   
     if (sigprocmask(SIG_BLOCK, &blockedMask, &origMask) == -1) {
         perror("sigprocmask error");
