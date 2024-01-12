@@ -114,9 +114,6 @@ int main() {
     FD_ZERO(&fds);
     FD_SET(server_socket, &fds);
     int max_fd = server_socket;
-    
-    struct timespec timeout;
-    timeout.tv_sec = 1;
 
     while (!wasSigHup) {
         // Копируем набор дескрипторов, так как pselect изменяет его
@@ -135,7 +132,7 @@ int main() {
             continue;
         }
 
-        for (int i = server_socket; i <= max_fd; i++) {
+        for (int i = 3; i <= max_fd; i++) {
             if (!FD_ISSET(i, &temp_fds)) continue;
 
             if (i == server_socket) {
